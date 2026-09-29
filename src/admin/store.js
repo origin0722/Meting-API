@@ -3,11 +3,15 @@ import { validateCookie as validateCookieOnline } from './cookie-validator.js'
 
 const runtime = get_runtime()
 
-const isServerRuntime = ['node', 'deno', 'bun'].includes(runtime)
+// Runtimes that can reach the Node builtins through Deno/Bun/Node compatibility.
+// `vercel` runs on Node and must be included: its `RUNTIME=vercel` marker is also
+// what makes get_url() hand out https:// links, so it cannot simply be dropped.
+// Cloudflare Workers and Fastly have no filesystem, so they stay excluded.
+const isServerRuntime = ['node', 'deno', 'bun', 'vercel'].includes(runtime)
 
 let fs, path, nodeCrypto
 
-if (isServerRuntime && runtime === 'node') {
+if (isServerRuntime) {
     fs = await import('fs')
     path = await import('path')
     nodeCrypto = await import('crypto')

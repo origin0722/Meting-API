@@ -1,5 +1,5 @@
 import Providers from "../providers/index.js"
-import { format as lyricFormat, get_url } from "../util.js"
+import { format as lyricFormat, get_url, getEnv } from "../util.js"
 import store from "../admin/store.js"
 import apiLogger from "./api-logger.js"
 
@@ -79,6 +79,12 @@ export default async (ctx) => {
         const storedCookie = store.getActiveCookie(server)
         if (storedCookie) {
             cookie = storedCookie.cookie
+        }
+        // Deno Deploy has no persistent disk: a cookie saved through the admin
+        // dashboard is gone as soon as the isolate is recycled. The environment
+        // variable is what the platform keeps across deployments.
+        if (!cookie && server === 'netease') {
+            cookie = getEnv('NETEASE_COOKIE') || ''
         }
 
         let data = await p.get(server).handle(type, id, cookie)

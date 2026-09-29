@@ -4,8 +4,18 @@
     },
     "rewrites": [
         {
+            "source": "/health",
+            "destination": "/api/health"
+        },
+        {
             "source": "/(.*)",
             "destination": "/api"
+        }
+    ],
+    "crons": [
+        {
+            "path": "/health",
+            "schedule": "0 9 * * *"
         }
     ]
 }

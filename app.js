@@ -10,6 +10,7 @@ import { logger } from 'hono/logger'
 import { cors } from 'hono/cors'
 import config from './src/config.js'
 import { get_runtime, get_url } from './src/util.js'
+import { runHealthCheck } from './src/service/health-check.js'
 
 const app = new Hono()
 
@@ -695,6 +696,14 @@ Location: https://img.example.com/cover.jpg</pre>
     </script>
 </body>
 </html>`)
+})
+
+// Cookie health endpoint, available in every runtime that serves the app directly
+// (Deno Deploy, Node, Docker). Vercel reaches it through `api/health.js`, because
+// its catch-all rewrite only exposes the Meting API.
+app.get('/health', async (c) => {
+    const result = await runHealthCheck('netease')
+    return c.json(result, result.ok ? 200 : 503)
 })
 
 cookieMonitor.start()

@@ -90,6 +90,23 @@ export const get_runtime = () => {
   return 'other'
 }
 
+/**
+ * Read an environment variable across runtimes.
+ *
+ * Deno exposes `Deno.env.get`, Node/Bun expose `process.env`. Without this the
+ * Deno Deploy build has no way to receive a cookie: the admin dashboard writes to
+ * `./data`, and Deploy's filesystem does not survive an isolate being recycled.
+ */
+export const getEnv = (key) => {
+  if (globalThis?.process?.env?.[key]) return globalThis.process.env[key]
+  try {
+    if (globalThis?.Deno?.env?.get(key)) return globalThis.Deno.env.get(key)
+  } catch {
+    /* --allow-env not granted */
+  }
+  return null
+}
+
 export const get_url = (ctx) => {
   const runtime = get_runtime()
   const perfix = ctx.req.header('X-Forwarded-Host') || ctx.req.header('X-Forwarded-Url')
